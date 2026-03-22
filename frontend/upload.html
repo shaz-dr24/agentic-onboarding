@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Onboard.AI — New Employee</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <style>
+    .upload-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+      padding-bottom: 4rem;
+    }
+
+    /* Progress tracker sidebar */
+    .progress-tracker {
+      position: sticky;
+      top: 80px;
+      align-self: start;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .tracker-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+    }
+
+    .tracker-title {
+      font-family: var(--font-head);
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .tracker-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .tracker-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 0.8rem 0;
+      position: relative;
+    }
+
+    .tracker-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 13px;
+      top: 40px;
+      bottom: -4px;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .tracker-step.done::after { background: var(--green); }
+    .tracker-step.active::after { background: var(--amber); }
+
+    .t-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-3);
+      flex-shrink: 0;
+      transition: all 0.3s;
+      z-index: 1;
+    }
+
+    .tracker-step.done  .t-dot { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+    .tracker-step.active .t-dot { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+
+    .t-info {}
+    .t-step-name { font-size: 0.82rem; font-weight: 600; color: var(--text-2); }
+    .t-step-desc { font-size: 0.72rem; color: var(--text-3); margin-top: 1px; }
+
+    .tracker-step.done  .t-step-name { color: var(--green); }
+    .tracker-step.active .t-step-name { color: var(--text-1); }
+
+    /* Requirements checklist */
+    .req-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .req-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+    }
+
+    .req-item::before {
+      content: '○';
+      color: var(--text-3);
+      font-size: 0.6rem;
+    }
+
+    /* Form container */
+    .form-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+    }
+
+    /* Drop area multi-file */
+    .drop-area {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .drop-area:hover, .drop-area.drag-over {
+      border-color: var(--amber);
+      background: var(--amber-dim);
+    }
+
+    .drop-area input[type="file"] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+
+    /* Submit zone */
+    .submit-zone {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 1.5rem;
+      background: rgba(245,158,11,0.05);
+      border: 1px solid rgba(245,158,11,0.15);
+      border-radius: var(--radius);
+      margin-top: 1.5rem;
+    }
+
+    .submit-info { font-size: 0.82rem; color: var(--text-2); }
+    .submit-info strong { color: var(--text-1); }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ──────────────────────────────────── -->
+<nav class="navbar">
+  <a class="navbar-brand" href="index.html">
+    <div class="brand-icon">🤖</div>
+    <span class="brand-name">Onboard<span>.AI</span></span>
+  </a>
+  <ul class="navbar-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="upload.html" class="active">New Employee</a></li>
+    <li><a href="status.html">Verify Status</a></li>
+  </ul>
+</nav>
+
+<!-- ── LOADER OVERLAY ──────────────────────────── -->
+<div class="loader-overlay" id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">PROCESSING DOCUMENTS</div>
+  <div class="loader-steps">
+    <div class="loader-step current" id="ls1">→ Uploading documents…</div>
+    <div class="loader-step" id="ls2">→ Running OCR extraction…</div>
+    <div class="loader-step" id="ls3">→ AI verification agents…</div>
+    <div class="loader-step" id="ls4">→ Triggering onboarding…</div>
+  </div>
+</div>
+
+<main>
+  <div class="wrapper">
+    <div class="page-header">
+      <div class="page-header-inner">
+        <div>
+          <div class="page-eyebrow">New Employee Onboarding</div>
+          <h1 class="page-title">Upload & Verify</h1>
+          <p class="page-subtitle">
+            Fill in employee details and upload required documents. 
+            AI agents will automatically extract and verify all credentials.
+          </p>
+        </div>
+        <a href="index.html" class="btn btn-ghost">← Back to Dashboard</a>
+      </div>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper" id="stepper">
+      <div class="step active" id="step1">
+        <div class="step-dot">01</div>
+        <div class="step-label">Details</div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-dot">02</div>
+        <div class="step-label">Documents</div>
+      </div>
+      <div class="step" id="step3">
+        <div class="step-dot">03</div>
+        <div class="step-label">Verification</div>
+      </div>
+      <div class="step" id="step4">
+        <div class="step-dot">04</div>
+        <div class="step-label">Complete</div>
+      </div>
+    </div>
+
+    <!-- Main Upload Layout -->
+    <div class="upload-layout">
+
+      <!-- FORM -->
+      <div>
+        <div class="form-container">
+          <form id="onboardForm" enctype="multipart/form-data">
+
+            <!-- SECTION 1: Employee Info -->
+            <div class="form-section">
+              <div class="form-section-title">
+                <div class="form-section-icon">👤</div>
+                Employee Information
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="name">Full Name *</label>
+                  <input type="text" id="name" name="name" placeholder="e.g. Arun Kumar" required />
+                </div>
+                <div class="form-group">
+                  <label for="email">Personal Email *</label>
+                  <input type="email" id="email" name="email" placeholder="e.g. arun@gmail.com" required />
+                </div>
+                <div class="form-group">
+                  <label for="role">Job Role *</label>
+                  <select id="role" name="role" required>
+                    <option value="" disabled selected>Select role…</option>
+                    <option value="Software Engineer">Software Engineer</option>
+                    <option value="Data Analyst">Data Analyst</option>
+                    <option value="Product Manager">Product Manager</option>
+                    <option value="DevOps Engineer">DevOps Engineer</option>
+                    <option value="HR Manager">HR Manager</option>
+                    <option value="Finance Analyst">Finance Analyst</option>
+                    <option value="Intern">Intern</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="dept">Department</label>
+                  <input type="text" id="dept" name="dept" placeholder="e.g. Engineering" />
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: Documents -->
+            <div class="form-section">
+              <div class="form-section-title">
+                <div class="form-section-icon">📁</div>
+                Document Upload
+                <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--text-3);font-weight:400;margin-left:auto;">PDF / JPG / PNG</span>
+              </div>
+
+              <!-- Drop zone -->
+              <div class="drop-area" id="dropArea">
+                <input type="file" id="docFiles" multiple accept=".pdf,.jpg,.jpeg,.png" />
+                <span class="upload-icon">📂</span>
+                <div class="upload-text">
+                  <strong>Drag & drop</strong> documents here, or click to browse
+                </div>
+                <div class="upload-hint">Aadhaar • PAN • Marksheets • Bank Passbook</div>
+              </div>
+
+              <!-- Document list with type selectors -->
+              <div class="doc-list" id="docList"></div>
+
+              <div style="margin-top:0.8rem;">
+                <div class="alert alert-warning" style="font-size:0.78rem;">
+                  ⚠️ Assign the correct document type to each file for accurate AI extraction.
+                </div>
+              </div>
+            </div>
+
+            <!-- SUBMIT -->
+            <div class="submit-zone">
+              <div class="submit-info">
+                <strong id="fileCountLabel">No documents</strong> selected
+                · All data processed securely
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                🚀 Process & Onboard
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- Result panel -->
+        <div class="result-panel" id="resultPanel">
+          <div class="result-header">
+            <div class="result-icon" id="resultIcon">—</div>
+            <div>
+              <div class="result-title" id="resultTitle">—</div>
+              <div style="font-size:0.82rem;color:var(--text-2);margin-top:2px;" id="resultSub">—</div>
+            </div>
+          </div>
+
+          <div class="result-grid" id="resultGrid"></div>
+          <div id="failureReasons"></div>
+          <div style="margin-top:1.2rem;display:flex;gap:0.75rem;" id="resultActions"></div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div class="progress-tracker">
+
+        <!-- Step tracker -->
+        <div class="tracker-card">
+          <div class="tracker-title">Process Steps</div>
+          <div class="tracker-steps">
+            <div class="tracker-step active" id="ts1">
+              <div class="t-dot">01</div>
+              <div class="t-info">
+                <div class="t-step-name">Employee Details</div>
+                <div class="t-step-desc">Name, email, role</div>
+              </div>
+            </div>
+            <div class="tracker-step" id="ts2">
+              <div class="t-dot">02</div>
+              <div class="t-info">
+                <div class="t-step-name">Document Upload</div>
+                <div class="t-step-desc">Aadhaar, PAN, Marks</div>
+              </div>
+            </div>
+            <div class="tracker-step" id="ts3">
+              <div class="t-dot">03</div>
+              <div class="t-info">
+                <div class="t-step-name">OCR Extraction</div>
+                <div class="t-step-desc">AI reads documents</div>
+              </div>
+            </div>
+            <div class="tracker-step" id="ts4">
+              <div class="t-dot">04</div>
+              <div class="t-info">
+                <div class="t-step-name">Verification</div>
+                <div class="t-step-desc">Rules & threshold check</div>
+              </div>
+            </div>
+            <div class="tracker-step" id="ts5">
+              <div class="t-dot">05</div>
+              <div class="t-info">
+                <div class="t-step-name">Onboarding</div>
+                <div class="t-step-desc">Email + credentials sent</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Requirements -->
+        <div class="tracker-card">
+          <div class="tracker-title">Verification Criteria</div>
+          <div class="req-list">
+            <div class="req-item">CGPA ≥ 8.3</div>
+            <div class="req-item">10th marks ≥ 75%</div>
+            <div class="req-item">12th marks ≥ 75%</div>
+            <div class="req-item">Valid Aadhaar (12 digits)</div>
+            <div class="req-item">Valid PAN (AAAAA0000A)</div>
+            <div class="req-item">Valid Bank Account (9-18 digits)</div>
+          </div>
+        </div>
+
+        <!-- Supported doc types -->
+        <div class="tracker-card">
+          <div class="tracker-title">Document Types</div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+            <span class="badge badge-pending">Aadhaar</span>
+            <span class="badge badge-pending">PAN Card</span>
+            <span class="badge badge-pending">10th Marksheet</span>
+            <span class="badge badge-pending">12th Marksheet</span>
+            <span class="badge badge-pending">Degree / CGPA</span>
+            <span class="badge badge-pending">Bank Passbook</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="navbar-brand" style="gap:8px;">
+    <div class="brand-icon" style="width:22px;height:22px;font-size:11px;border-radius:5px;">🤖</div>
+    <span style="font-family:var(--font-head);font-size:0.8rem;font-weight:800;color:var(--text-2);">Onboard<span style="color:var(--amber);">.AI</span></span>
+  </div>
+  <span>Agentic HR System — Flask + PostgreSQL + n8n</span>
+</footer>
+
+<script>
+  const BASE = 'http://127.0.0.1:5000';
+  const docFiles = document.getElementById('docFiles');
+  const docList  = document.getElementById('docList');
+  const dropArea = document.getElementById('dropArea');
+  let selectedFiles = [];
+
+  const DOC_TYPES = [
+    { value: 'aadhaar',       label: '🆔 Aadhaar Card'   },
+    { value: 'pan',           label: '💳 PAN Card'        },
+    { value: '10th',          label: '🎓 10th Marksheet'  },
+    { value: '12th',          label: '🎓 12th Marksheet'  },
+    { value: 'degree',        label: '🏛 Degree / CGPA'   },
+    { value: 'bank_passbook', label: '🏦 Bank Passbook'   },
+    { value: 'other',         label: '📄 Other'           },
+  ];
+
+  /* Drag & Drop */
+  dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('drag-over'); });
+  dropArea.addEventListener('dragleave', () => dropArea.classList.remove('drag-over'));
+  dropArea.addEventListener('drop', e => {
+    e.preventDefault(); dropArea.classList.remove('drag-over');
+    addFiles([...e.dataTransfer.files]);
+  });
+
+  docFiles.addEventListener('change', () => addFiles([...docFiles.files]));
+
+  function addFiles(newFiles) {
+    newFiles.forEach(f => {
+      if (!selectedFiles.find(sf => sf.name === f.name)) selectedFiles.push(f);
+    });
+    renderDocList();
+  }
+
+  function removeFile(name) {
+    selectedFiles = selectedFiles.filter(f => f.name !== name);
+    renderDocList();
+  }
+
+  function renderDocList() {
+    docList.innerHTML = '';
+    document.getElementById('fileCountLabel').textContent =
+      selectedFiles.length > 0 ? `${selectedFiles.length} document${selectedFiles.length > 1 ? 's' : ''}` : 'No documents';
+
+    selectedFiles.forEach((f, i) => {
+      const row = document.createElement('div');
+      row.className = 'doc-row';
+      row.innerHTML = `
+        <div class="doc-name">
+          <span>${f.type.includes('pdf') ? '📄' : '🖼'}</span>
+          ${f.name}
+        </div>
+        <select class="doc-type-select" id="docType_${i}" style="width:100%;">
+          ${DOC_TYPES.map(d => `<option value="${d.value}">${d.label}</option>`).join('')}
+        </select>
+        <button type="button" class="doc-remove" onclick="removeFile('${f.name}')">✕</button>
+      `;
+      docList.appendChild(row);
+    });
+
+    // Update stepper
+    if (selectedFiles.length > 0) {
+      markStep('ts2', 'done'); markStep('ts3', 'active');
+    } else {
+      markStep('ts2', ''); markStep('ts3', '');
+    }
+  }
+
+  function markStep(id, state) {
+    const el = document.getElementById(id);
+    el.className = 'tracker-step' + (state ? ` ${state}` : '');
+  }
+
+  /* Form input → update stepper step1 */
+  ['name','email','role'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      const allFilled = document.getElementById('name').value &&
+                        document.getElementById('email').value &&
+                        document.getElementById('role').value;
+      if (allFilled) markStep('ts1', 'done');
+    });
+  });
+
+  /* ── LOADER ANIMATION ── */
+  function animateLoader() {
+    const steps = ['ls1','ls2','ls3','ls4'];
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i > 0) document.getElementById(steps[i-1]).className = 'loader-step done';
+      if (i < steps.length) {
+        document.getElementById(steps[i]).className = 'loader-step current';
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 1200);
+  }
+
+  /* ── SUBMIT ── */
+  document.getElementById('onboardForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!selectedFiles.length) {
+      showAlert('Please upload at least one document.', 'error');
+      return;
+    }
+
+    const name  = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const role  = document.getElementById('role').value;
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('role', role);
+
+    selectedFiles.forEach((f, i) => {
+      formData.append('documents', f);
+      const selectEl = document.getElementById(`docType_${i}`);
+      formData.append('doc_types', selectEl ? selectEl.value : 'other');
+    });
+
+    // Show loader
+    const loader = document.getElementById('loader');
+    loader.classList.add('active');
+    animateLoader();
+
+    // Reset loader steps
+    ['ls1','ls2','ls3','ls4'].forEach(id => {
+      document.getElementById(id).className = 'loader-step';
+    });
+
+    try {
+      const res = await fetch(`${BASE}/upload_employee`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      loader.classList.remove('active');
+
+      if (!res.ok) {
+        showResult('failed', data.error || 'Server error');
+        return;
+      }
+
+      showResult(data.onboarding_status, null, data);
+
+    } catch (err) {
+      loader.classList.remove('active');
+      showResult('error', err.message);
+    }
+  });
+
+  /* ── SHOW RESULT ── */
+  function showResult(status, errMsg, data) {
+    const panel = document.getElementById('resultPanel');
+    const icon  = document.getElementById('resultIcon');
+    const title = document.getElementById('resultTitle');
+    const sub   = document.getElementById('resultSub');
+    const grid  = document.getElementById('resultGrid');
+    const frDiv = document.getElementById('failureReasons');
+    const acts  = document.getElementById('resultActions');
+
+    panel.className = 'result-panel show';
+
+    if (status === 'completed') {
+      panel.classList.add('success');
+      icon.textContent  = '🎉';
+      title.textContent = 'Onboarding Successful!';
+      title.style.color = 'var(--green)';
+      sub.textContent   = `Employee ID: #${data.employee_id} — Welcome email & credentials dispatched via n8n`;
+
+      // Mark all tracker steps done
+      ['ts1','ts2','ts3','ts4','ts5'].forEach(id => markStep(id, 'done'));
+      ['step1','step2','step3','step4'].forEach(id => {
+        const s = document.getElementById(id);
+        s.className = 'step done';
+      });
+
+      const ex = data.extracted_data || {};
+      grid.innerHTML = Object.entries(ex).map(([k,v]) => `
+        <div class="result-item">
+          <div class="result-item-label">${k.replace(/_/g,' ')}</div>
+          <div class="result-item-value">${v || '—'}</div>
+        </div>
+      `).join('');
+
+      frDiv.innerHTML = '';
+      acts.innerHTML = `
+        <a href="status.html?id=${data.employee_id}" class="btn btn-success">View Profile →</a>
+        <button class="btn btn-ghost" onclick="resetForm()">+ Onboard Another</button>
+      `;
+
+    } else if (status === 'failed') {
+      panel.classList.add('failure');
+      icon.textContent  = '❌';
+      title.textContent = 'Verification Failed';
+      title.style.color = 'var(--red)';
+
+      const empId = data?.employee_id;
+      sub.textContent = empId ? `Employee ID: #${empId} — Please review and re-upload.` : (errMsg || 'Unknown error');
+
+      const reasons = data?.onboarding_status === 'failed' ? [] : [];
+      grid.innerHTML = '';
+      frDiv.innerHTML = '';
+      acts.innerHTML = `<button class="btn btn-danger" onclick="resetForm()">Re-upload Documents</button>`;
+
+    } else {
+      panel.classList.add('failure');
+      icon.textContent  = '⚠️';
+      title.textContent = 'Request Error';
+      title.style.color = 'var(--amber)';
+      sub.textContent   = errMsg || 'Could not reach the server.';
+      grid.innerHTML = '';
+      frDiv.innerHTML = '';
+      acts.innerHTML = `<button class="btn btn-ghost" onclick="document.getElementById('resultPanel').className='result-panel'">Dismiss</button>`;
+    }
+
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function showAlert(msg, type) {
+    const existing = document.querySelector('.temp-alert');
+    if (existing) existing.remove();
+    const a = document.createElement('div');
+    a.className = `alert alert-${type === 'error' ? 'error' : 'warning'} temp-alert animate-in`;
+    a.style.marginTop = '1rem';
+    a.textContent = msg;
+    document.getElementById('onboardForm').prepend(a);
+    setTimeout(() => a.remove(), 4000);
+  }
+
+  function resetForm() {
+    document.getElementById('onboardForm').reset();
+    selectedFiles = [];
+    renderDocList();
+    document.getElementById('resultPanel').className = 'result-panel';
+    ['ts1','ts2','ts3','ts4','ts5'].forEach((id,i) => {
+      markStep(id, i === 0 ? 'active' : '');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>

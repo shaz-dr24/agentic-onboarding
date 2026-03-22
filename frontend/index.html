@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Onboard.AI — Dashboard</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <style>
+    /* ── HERO ──────────────────────────────── */
+    .hero {
+      padding: 4rem 0 2.5rem;
+      position: relative;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: -40px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(245,158,11,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--amber);
+      background: var(--amber-dim);
+      border: 1px solid rgba(245,158,11,0.2);
+      padding: 0.3rem 0.75rem;
+      border-radius: 99px;
+      margin-bottom: 1rem;
+    }
+
+    .hero-tag-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: pulse-dot 1.4s infinite;
+    }
+
+    .hero-title {
+      font-family: var(--font-head);
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      max-width: 520px;
+    }
+
+    .hero-title .line-amber { color: var(--amber); }
+
+    .hero-subtitle {
+      font-size: 1rem;
+      color: var(--text-2);
+      max-width: 440px;
+      margin-top: 0.8rem;
+      line-height: 1.65;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.8rem;
+    }
+
+    /* ── PIPELINE VISUAL ───────────────────── */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .pipeline-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      min-width: 120px;
+      text-align: center;
+      transition: all 0.25s;
+    }
+
+    .pipeline-step:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-2px);
+    }
+
+    .pipeline-arrow {
+      color: var(--text-3);
+      font-size: 1rem;
+      padding: 0 0.3rem;
+    }
+
+    .pipeline-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+
+    .pipeline-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-2);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── SECTION TITLE ─────────────────────── */
+    .section-title {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── ACTIVITY FEED ─────────────────────── */
+    .activity-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid var(--border);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .activity-dot.green { background: var(--green); }
+    .activity-dot.red   { background: var(--red); }
+    .activity-dot.amber { background: var(--amber); }
+
+    .activity-info { flex: 1; }
+
+    .activity-name {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-1);
+    }
+
+    .activity-detail {
+      font-size: 0.75rem;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      margin-top: 1px;
+    }
+
+    .activity-time {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-3);
+    }
+
+    /* ── MAIN GRID ─────────────────────────── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ── QUICK ACTION CARDS ─────────────────── */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .quick-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      text-decoration: none;
+      transition: all 0.25s;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quick-card::after {
+      content: '→';
+      position: absolute;
+      right: 1rem;
+      bottom: 1rem;
+      font-size: 1.1rem;
+      color: var(--text-3);
+      transition: all 0.2s;
+    }
+
+    .quick-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .quick-card:hover::after {
+      color: var(--amber);
+      right: 0.75rem;
+    }
+
+    .quick-card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .quick-card-title {
+      font-family: var(--font-head);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-1);
+    }
+
+    .quick-card-desc {
+      font-size: 0.78rem;
+      color: var(--text-3);
+    }
+
+    /* ── SYSTEM STATUS ─────────────────────── */
+    .sys-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
+    }
+
+    .sys-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+    }
+
+    .sys-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    .sys-dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+    .sys-dot.down { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+
+    .sys-name { flex: 1; color: var(--text-2); }
+
+    .sys-val {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-3);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ──────────────────────────────────── -->
+<nav class="navbar">
+  <a class="navbar-brand" href="index.html">
+    <div class="brand-icon">🤖</div>
+    <span class="brand-name">Onboard<span>.AI</span></span>
+  </a>
+  <ul class="navbar-links">
+    <li><a href="index.html" class="active">Dashboard</a></li>
+    <li><a href="upload.html">New Employee</a></li>
+    <li><a href="status.html">Verify Status</a></li>
+  </ul>
+  <div class="navbar-cta">
+    <a href="upload.html" class="btn btn-primary">
+      + Onboard Employee
+    </a>
+  </div>
+</nav>
+
+<!-- ── MAIN ────────────────────────────────────── -->
+<main>
+  <div class="wrapper">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-inner">
+        <div>
+          <div class="hero-tag">
+            <span class="hero-tag-dot"></span>
+            AGENTIC AI SYSTEM — ACTIVE
+          </div>
+          <h1 class="hero-title">
+            Smart Employee<br>
+            <span class="line-amber">Onboarding</span><br>
+            Pipeline
+          </h1>
+          <p class="hero-subtitle">
+            Automated document extraction, multi-agent verification,
+            and intelligent onboarding orchestration — all in one place.
+          </p>
+          <div class="hero-actions">
+            <a href="upload.html" class="btn btn-primary btn-lg">Start Onboarding</a>
+            <a href="status.html" class="btn btn-ghost btn-lg">Check Status</a>
+          </div>
+        </div>
+        <!-- Pipeline visual -->
+        <div class="pipeline">
+          <div class="pipeline-step">
+            <div class="pipeline-icon">📄</div>
+            <div class="pipeline-label">Upload Docs</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="pipeline-icon">🔍</div>
+            <div class="pipeline-label">OCR Extract</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="pipeline-icon">🤖</div>
+            <div class="pipeline-label">AI Verify</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="pipeline-icon">✅</div>
+            <div class="pipeline-label">Onboard</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS GRID -->
+    <div class="stats-grid">
+      <div class="stat-card" data-color="amber">
+        <div class="stat-icon amber">👥</div>
+        <div class="stat-value" id="totalCount">—</div>
+        <div class="stat-label">Total Employees</div>
+        <div class="stat-badge" style="background:var(--amber-dim);color:var(--amber);">
+          All time
+        </div>
+      </div>
+      <div class="stat-card" data-color="green">
+        <div class="stat-icon green">✅</div>
+        <div class="stat-value" id="passedCount">—</div>
+        <div class="stat-label">Onboarded</div>
+        <div class="stat-badge" style="background:var(--green-dim);color:var(--green);">
+          ↑ Passed
+        </div>
+      </div>
+      <div class="stat-card" data-color="red">
+        <div class="stat-icon red">❌</div>
+        <div class="stat-value" id="failedCount">—</div>
+        <div class="stat-label">Failed</div>
+        <div class="stat-badge" style="background:var(--red-dim);color:var(--red);">
+          Needs review
+        </div>
+      </div>
+      <div class="stat-card" data-color="blue">
+        <div class="stat-icon blue">⏳</div>
+        <div class="stat-value" id="pendingCount">—</div>
+        <div class="stat-label">Pending</div>
+        <div class="stat-badge" style="background:var(--blue-dim);color:var(--blue);">
+          In queue
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="main-grid">
+      <!-- LEFT: Recent employees table -->
+      <div>
+        <div class="table-wrap">
+          <div class="table-head">
+            <span class="table-title">Recent Employees</span>
+            <div class="table-actions">
+              <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="tableSearch" placeholder="Search name / role…" style="width:200px;padding:0.4rem 0.8rem 0.4rem 2.2rem;font-size:0.78rem;">
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="loadRecentEmployees()">↺ Refresh</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="employeeTableBody">
+              <tr>
+                <td colspan="6">
+                  <div class="empty-state">
+                    <div class="empty-icon">📂</div>
+                    <div class="empty-title">Loading employees…</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT: Quick actions + Activity -->
+      <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+        <!-- Quick Actions -->
+        <div>
+          <div class="section-title">Quick Actions</div>
+          <div class="quick-actions">
+            <a href="upload.html" class="quick-card">
+              <div class="quick-card-icon">🚀</div>
+              <div class="quick-card-title">New Onboarding</div>
+              <div class="quick-card-desc">Upload employee documents</div>
+            </a>
+            <a href="status.html" class="quick-card">
+              <div class="quick-card-icon">🔎</div>
+              <div class="quick-card-title">Check Status</div>
+              <div class="quick-card-desc">Verify employee by ID</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card">
+          <div class="section-title" style="margin-bottom:0.5rem;">System Status</div>
+          <div class="sys-items">
+            <div class="sys-item">
+              <div class="sys-dot"></div>
+              <span class="sys-name">Flask Backend</span>
+              <span class="sys-val" id="backendStatus">Checking…</span>
+            </div>
+            <div class="sys-item">
+              <div class="sys-dot" id="n8nDot"></div>
+              <span class="sys-name">n8n Workflow</span>
+              <span class="sys-val">Port 5678</span>
+            </div>
+            <div class="sys-item">
+              <div class="sys-dot"></div>
+              <span class="sys-name">PostgreSQL</span>
+              <span class="sys-val">springdb</span>
+            </div>
+            <div class="sys-item">
+              <div class="sys-dot"></div>
+              <span class="sys-name">OCR Engine</span>
+              <span class="sys-val">Tesseract</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity -->
+        <div class="card" style="flex:1;">
+          <div class="section-title" style="margin-bottom:0.5rem;">
+            Live Activity
+            <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-3);font-weight:400;">Last 5 events</span>
+          </div>
+          <div class="activity-feed" id="activityFeed">
+            <div style="text-align:center;padding:2rem;color:var(--text-3);font-size:0.82rem;font-family:var(--font-mono);">
+              No activity yet
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="navbar-brand" style="gap:8px;">
+    <div class="brand-icon" style="width:22px;height:22px;font-size:11px;border-radius:5px;">🤖</div>
+    <span style="font-family:var(--font-head);font-size:0.8rem;font-weight:800;color:var(--text-2);">Onboard<span style="color:var(--amber);">.AI</span></span>
+  </div>
+  <span>Agentic HR System — Flask + PostgreSQL + n8n</span>
+  <span id="serverTime">—</span>
+</footer>
+
+<script>
+  const BASE = 'http://127.0.0.1:5000';
+
+  /* ── CHECK BACKEND STATUS ── */
+  async function checkBackend() {
+    try {
+      const r = await fetch(`${BASE}/`);
+      if (r.ok) {
+        document.getElementById('backendStatus').textContent = 'Online ✓';
+      }
+    } catch {
+      document.getElementById('backendStatus').textContent = 'Offline ✗';
+      document.querySelector('.sys-items .sys-dot').className = 'sys-dot down';
+    }
+  }
+
+  /* ── DEMO EMPLOYEE ROWS ── */
+  function loadRecentEmployees() {
+    const tbody = document.getElementById('employeeTableBody');
+    // These are sample rows – connect to a /get_employees endpoint if you add one
+    const demo = [
+      { id: 1, name: "Arun Kumar",   email: "arun@gmail.com",    role: "Engineer",  status: "completed" },
+      { id: 2, name: "Priya Sharma", email: "priya@gmail.com",   role: "Analyst",   status: "failed"    },
+      { id: 3, name: "Ramesh Nair",  email: "ramesh@gmail.com",  role: "Manager",   status: "pending"   },
+      { id: 4, name: "Divya Raj",    email: "divya@gmail.com",   role: "Intern",    status: "completed" },
+    ];
+
+    let passedCount = 0, failedCount = 0, pendingCount = 0;
+    demo.forEach(e => {
+      if (e.status === 'completed') passedCount++;
+      else if (e.status === 'failed') failedCount++;
+      else pendingCount++;
+    });
+
+    document.getElementById('totalCount').textContent   = demo.length;
+    document.getElementById('passedCount').textContent  = passedCount;
+    document.getElementById('failedCount').textContent  = failedCount;
+    document.getElementById('pendingCount').textContent = pendingCount;
+
+    const statusBadge = s => {
+      const map = {
+        completed: 'badge-completed',
+        passed:    'badge-passed',
+        failed:    'badge-failed',
+        pending:   'badge-pending',
+      };
+      return `<span class="badge ${map[s] || 'badge-pending'}">${s}</span>`;
+    };
+
+    tbody.innerHTML = demo.map(e => `
+      <tr>
+        <td><span class="emp-id-badge">#${e.id}</span></td>
+        <td>${e.name}</td>
+        <td>${e.email}</td>
+        <td>${e.role}</td>
+        <td>${statusBadge(e.status)}</td>
+        <td>
+          <a href="status.html?id=${e.id}" class="btn btn-sm btn-outline-amber">View</a>
+        </td>
+      </tr>
+    `).join('');
+
+    // Activity feed
+    buildActivity(demo);
+  }
+
+  function buildActivity(employees) {
+    const feed = document.getElementById('activityFeed');
+    const dotColor = s => s === 'completed' ? 'green' : s === 'failed' ? 'red' : 'amber';
+    const mins = [2,5,14,28,45];
+    feed.innerHTML = [...employees].reverse().map((e, i) => `
+      <div class="activity-item">
+        <div class="activity-dot ${dotColor(e.status)}"></div>
+        <div class="activity-info">
+          <div class="activity-name">${e.name}</div>
+          <div class="activity-detail">${e.role} — ${e.status}</div>
+        </div>
+        <div class="activity-time">${mins[i]}m ago</div>
+      </div>
+    `).join('');
+  }
+
+  /* ── SEARCH FILTER ── */
+  document.getElementById('tableSearch').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#employeeTableBody tr').forEach(tr => {
+      tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+
+  /* ── CLOCK ── */
+  function updateClock() {
+    document.getElementById('serverTime').textContent =
+      new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  /* ── INIT ── */
+  checkBackend();
+  loadRecentEmployees();
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+</body>
+</html>

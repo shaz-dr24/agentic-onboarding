@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Onboard.AI — Verify Status</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <style>
+    .status-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 1.5rem;
+      padding-bottom: 4rem;
+    }
+
+    /* Search panel */
+    .search-panel {
+      position: sticky;
+      top: 80px;
+      align-self: start;
+    }
+
+    .search-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+    }
+
+    .search-card h3 {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 1.2rem;
+    }
+
+    .emp-id-input-wrap {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .emp-id-input {
+      font-family: var(--font-mono) !important;
+      font-size: 1.4rem !important;
+      font-weight: 700 !important;
+      text-align: center;
+      letter-spacing: 0.15em;
+      padding: 1rem !important;
+    }
+
+    .emp-id-input::placeholder {
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+      font-weight: 400;
+    }
+
+    /* Profile card */
+    .profile-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .profile-header {
+      background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(59,130,246,0.06));
+      border-bottom: 1px solid var(--border);
+      padding: 2rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+    }
+
+    .profile-avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--amber-dim);
+      border: 2px solid rgba(245,158,11,0.3);
+      display: grid;
+      place-items: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    .profile-name {
+      font-family: var(--font-head);
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.3rem;
+    }
+
+    .profile-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.4rem;
+    }
+
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+    }
+
+    .profile-body {
+      padding: 1.75rem;
+    }
+
+    /* Data sections */
+    .data-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .data-section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-head);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-3);
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .data-field {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+    }
+
+    .data-field-key {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.3rem;
+    }
+
+    .data-field-val {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--amber-light);
+      font-weight: 600;
+    }
+
+    .data-field-val.dim { color: var(--text-3); font-weight: 400; }
+    .data-field-val.pass { color: var(--green); }
+    .data-field-val.fail { color: var(--red); }
+
+    /* Verification result strip */
+    .verdict-strip {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.2rem 1.5rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      border: 1px solid;
+    }
+
+    .verdict-strip.pass {
+      background: rgba(16,185,129,0.07);
+      border-color: rgba(16,185,129,0.25);
+    }
+
+    .verdict-strip.fail {
+      background: rgba(239,68,68,0.07);
+      border-color: rgba(239,68,68,0.25);
+    }
+
+    .verdict-strip.pending {
+      background: rgba(245,158,11,0.07);
+      border-color: rgba(245,158,11,0.25);
+    }
+
+    .verdict-icon { font-size: 2rem; }
+
+    .verdict-title {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .verdict-sub { font-size: 0.8rem; color: var(--text-2); margin-top: 2px; }
+
+    .verdict-actions { margin-left: auto; display: flex; gap: 0.5rem; }
+
+    /* Trigger btn */
+    .re-run-section {
+      background: rgba(245,158,11,0.04);
+      border: 1px solid rgba(245,158,11,0.12);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    /* Empty placeholder */
+    .big-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6rem 2rem;
+      text-align: center;
+    }
+
+    .big-empty-icon { font-size: 4rem; opacity: 0.18; margin-bottom: 1.2rem; }
+
+    .big-empty-title {
+      font-family: var(--font-head);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-2);
+    }
+
+    .big-empty-sub {
+      font-size: 0.85rem;
+      color: var(--text-3);
+      margin-top: 0.4rem;
+      max-width: 280px;
+    }
+
+    /* Loader inside card */
+    .card-loading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 3rem;
+      justify-content: center;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+    }
+
+    .mini-spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--amber);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ──────────────────────────────────── -->
+<nav class="navbar">
+  <a class="navbar-brand" href="index.html">
+    <div class="brand-icon">🤖</div>
+    <span class="brand-name">Onboard<span>.AI</span></span>
+  </a>
+  <ul class="navbar-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="upload.html">New Employee</a></li>
+    <li><a href="status.html" class="active">Verify Status</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="wrapper">
+    <div class="page-header">
+      <div class="page-header-inner">
+        <div>
+          <div class="page-eyebrow">Employee Status</div>
+          <h1 class="page-title">Verify & Review</h1>
+          <p class="page-subtitle">
+            Enter an Employee ID to view verification results, extracted credentials,
+            and onboarding status.
+          </p>
+        </div>
+        <a href="upload.html" class="btn btn-primary">+ Onboard New Employee</a>
+      </div>
+    </div>
+
+    <div class="status-layout">
+
+      <!-- SEARCH PANEL -->
+      <div class="search-panel">
+        <div class="search-card">
+          <h3>🔎 Lookup Employee</h3>
+
+          <div class="emp-id-input-wrap">
+            <input
+              type="number"
+              id="empIdInput"
+              class="emp-id-input"
+              placeholder="Enter ID…"
+              min="1"
+            />
+          </div>
+
+          <button class="btn btn-primary" style="width:100%;" onclick="lookupEmployee()">
+            Search Employee
+          </button>
+
+          <div style="margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1.25rem;">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.75rem;">
+              Re-run Onboarding
+            </div>
+            <div style="display:flex;gap:0.5rem;">
+              <input type="number" id="rerunId" placeholder="Employee ID" style="flex:1;font-size:0.85rem;" min="1" />
+              <button class="btn btn-outline-amber" onclick="rerunOnboarding()">▶ Run</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick links -->
+        <div style="margin-top:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.75rem;">
+            Jump to ID
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.4rem;" id="quickIds">
+            <button class="btn btn-ghost btn-sm" onclick="quickSearch(1)">#1</button>
+            <button class="btn btn-ghost btn-sm" onclick="quickSearch(2)">#2</button>
+            <button class="btn btn-ghost btn-sm" onclick="quickSearch(3)">#3</button>
+            <button class="btn btn-ghost btn-sm" onclick="quickSearch(4)">#4</button>
+            <button class="btn btn-ghost btn-sm" onclick="quickSearch(5)">#5</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULT PANEL -->
+      <div id="resultArea">
+        <div class="big-empty">
+          <div class="big-empty-icon">🔍</div>
+          <div class="big-empty-title">No Employee Selected</div>
+          <div class="big-empty-sub">Enter an Employee ID on the left to view their onboarding profile.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="navbar-brand" style="gap:8px;">
+    <div class="brand-icon" style="width:22px;height:22px;font-size:11px;border-radius:5px;">🤖</div>
+    <span style="font-family:var(--font-head);font-size:0.8rem;font-weight:800;color:var(--text-2);">Onboard<span style="color:var(--amber);">.AI</span></span>
+  </div>
+  <span>Agentic HR System — Flask + PostgreSQL + n8n</span>
+</footer>
+
+<script>
+  const BASE = 'http://127.0.0.1:5000';
+
+  /* Pre-fill from URL param ?id=X */
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+      document.getElementById('empIdInput').value = id;
+      lookupEmployee();
+    }
+  });
+
+  /* Enter key on input */
+  document.getElementById('empIdInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') lookupEmployee();
+  });
+
+  function quickSearch(id) {
+    document.getElementById('empIdInput').value = id;
+    lookupEmployee();
+  }
+
+  /* ── LOOKUP EMPLOYEE ── */
+  async function lookupEmployee() {
+    const id = document.getElementById('empIdInput').value.trim();
+    if (!id) return;
+
+    const area = document.getElementById('resultArea');
+    area.innerHTML = `<div class="card-loading"><div class="mini-spinner"></div> Fetching employee #${id}…</div>`;
+
+    // Since there's no GET /employee/<id> endpoint yet, we simulate re-run to get status
+    // You can add a GET /employee/<id> route in Flask and replace this
+    try {
+      const res = await fetch(`${BASE}/start_onboarding/${id}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        area.innerHTML = renderError(`Employee #${id} not found or server error.`);
+        return;
+      }
+
+      renderProfile(id, data.status);
+
+    } catch (err) {
+      area.innerHTML = renderError(`Cannot connect to server. Make sure Flask is running on port 5000.`);
+    }
+  }
+
+  /* ── RE-RUN ONBOARDING ── */
+  async function rerunOnboarding() {
+    const id = document.getElementById('rerunId').value.trim();
+    if (!id) return;
+
+    const btn = document.querySelector('[onclick="rerunOnboarding()"]');
+    btn.textContent = '…';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`${BASE}/start_onboarding/${id}`);
+      const data = await res.json();
+
+      btn.textContent = '▶ Run';
+      btn.disabled = false;
+
+      document.getElementById('empIdInput').value = id;
+      renderProfile(id, data.status);
+
+    } catch {
+      btn.textContent = '▶ Run';
+      btn.disabled = false;
+      alert('Server unreachable.');
+    }
+  }
+
+  /* ── RENDER PROFILE ── */
+  function renderProfile(id, status) {
+    const area = document.getElementById('resultArea');
+
+    const statusMap = {
+      completed: { label: 'Onboarded',  cls: 'pass',    badge: 'badge-completed', icon: '🎉' },
+      passed:    { label: 'Passed',     cls: 'pass',    badge: 'badge-passed',    icon: '✅' },
+      failed:    { label: 'Failed',     cls: 'fail',    badge: 'badge-failed',    icon: '❌' },
+      pending:   { label: 'Pending',    cls: 'pending', badge: 'badge-pending',   icon: '⏳' },
+    };
+
+    const s = statusMap[status] || statusMap['pending'];
+    const timestamp = new Date().toLocaleString('en-IN');
+
+    area.innerHTML = `
+      <div class="profile-card animate-in">
+        <div class="profile-header">
+          <div class="profile-avatar">👤</div>
+          <div>
+            <div class="profile-name">Employee #${id}</div>
+            <div style="font-size:0.85rem;color:var(--text-2);">Onboarding Record</div>
+            <div class="profile-meta">
+              <span class="badge ${s.badge}">${s.label}</span>
+              <span class="meta-chip">ID: ${id}</span>
+              <span class="meta-chip">Checked: ${timestamp}</span>
+            </div>
+          </div>
+        </div>
+        <div class="profile-body">
+
+          <!-- Verdict -->
+          <div class="verdict-strip ${s.cls}">
+            <div class="verdict-icon">${s.icon}</div>
+            <div>
+              <div class="verdict-title" style="color:${s.cls === 'pass' ? 'var(--green)' : s.cls === 'fail' ? 'var(--red)' : 'var(--amber)'}">
+                ${s.cls === 'pass' ? 'Verification Passed — Onboarding Complete' :
+                  s.cls === 'fail' ? 'Verification Failed — Documents Rejected' :
+                  'Pending Verification'}
+              </div>
+              <div class="verdict-sub">
+                ${s.cls === 'pass'
+                  ? 'Company credentials and welcome email sent via n8n workflow.'
+                  : s.cls === 'fail'
+                  ? 'One or more verification criteria not met. Re-upload required.'
+                  : 'Awaiting document processing.'}
+              </div>
+            </div>
+            <div class="verdict-actions">
+              ${s.cls === 'fail' ? `<a href="upload.html" class="btn btn-sm btn-danger">Re-upload</a>` : ''}
+              ${s.cls === 'pass' ? `<button class="btn btn-sm btn-success" disabled>✓ Complete</button>` : ''}
+            </div>
+          </div>
+
+          <!-- Verification Criteria -->
+          <div class="data-section">
+            <div class="data-section-title">🔍 Verification Criteria</div>
+            <div class="data-grid">
+              ${renderCriteriaRow('CGPA', '≥ 8.3', status)}
+              ${renderCriteriaRow('10th Marks', '≥ 75%', status)}
+              ${renderCriteriaRow('12th Marks', '≥ 75%', status)}
+              ${renderCriteriaRow('Aadhaar', '12-digit', status)}
+              ${renderCriteriaRow('PAN', 'AAAAA0000A', status)}
+              ${renderCriteriaRow('Bank Account', '9-18 digits', status)}
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="data-section">
+            <div class="data-section-title">📋 Process Log</div>
+            <div style="display:flex;flex-direction:column;gap:0;">
+              ${renderLogItem('Document Upload', 'done')}
+              ${renderLogItem('OCR Extraction', 'done')}
+              ${renderLogItem('AI Agent Verification', status === 'failed' ? 'fail' : 'done')}
+              ${renderLogItem('n8n Notification', status === 'completed' || status === 'failed' ? 'done' : 'pending')}
+              ${renderLogItem('Company Email Sent', status === 'completed' ? 'done' : 'pending')}
+            </div>
+          </div>
+
+          <!-- Re-run -->
+          <div class="re-run-section">
+            <div>
+              <div style="font-size:0.85rem;font-weight:600;color:var(--text-1);">Re-trigger Onboarding</div>
+              <div style="font-size:0.75rem;color:var(--text-3);margin-top:1px;">Force re-run the verification pipeline for this employee</div>
+            </div>
+            <button class="btn btn-outline-amber btn-sm" onclick="forceRerun(${id})">
+              ↺ Re-run Pipeline
+            </button>
+          </div>
+
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCriteriaRow(label, rule, status) {
+    const isPass = status === 'completed' || status === 'passed';
+    const valClass = isPass ? 'pass' : status === 'failed' ? 'fail' : 'dim';
+    const icon = isPass ? '✓' : status === 'failed' ? '✗' : '…';
+    return `
+      <div class="data-field">
+        <div class="data-field-key">${label}</div>
+        <div class="data-field-val ${valClass}">${icon} ${rule}</div>
+      </div>
+    `;
+  }
+
+  function renderLogItem(label, state) {
+    const colors = { done: 'var(--green)', fail: 'var(--red)', pending: 'var(--text-3)' };
+    const icons  = { done: '✓', fail: '✗', pending: '…' };
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:0.6rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:${colors[state]};font-family:var(--font-mono);font-size:0.75rem;width:16px;">${icons[state]}</span>
+        <span style="font-size:0.82rem;color:${state === 'done' ? 'var(--text-1)' : state === 'fail' ? 'var(--red)' : 'var(--text-3)'};">${label}</span>
+        ${state === 'done' ? '<span style="margin-left:auto;font-family:var(--font-mono);font-size:0.68rem;color:var(--green);">DONE</span>' : ''}
+        ${state === 'fail' ? '<span style="margin-left:auto;font-family:var(--font-mono);font-size:0.68rem;color:var(--red);">FAILED</span>' : ''}
+      </div>
+    `;
+  }
+
+  function renderError(msg) {
+    return `
+      <div class="big-empty">
+        <div class="big-empty-icon">⚠️</div>
+        <div class="big-empty-title">Error</div>
+        <div class="big-empty-sub">${msg}</div>
+        <a href="upload.html" class="btn btn-primary" style="margin-top:1.5rem;">Onboard New Employee</a>
+      </div>
+    `;
+  }
+
+  async function forceRerun(id) {
+    const btn = event.target;
+    btn.textContent = '…running';
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${BASE}/start_onboarding/${id}`);
+      const data = await res.json();
+      btn.textContent = '↺ Re-run Pipeline';
+      btn.disabled = false;
+      renderProfile(id, data.status);
+    } catch {
+      btn.textContent = '↺ Re-run Pipeline';
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

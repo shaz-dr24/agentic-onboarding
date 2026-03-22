@@ -1,0 +1,17 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Uploads (optional)
+backend/uploads/
+
+# Node (if frontend grows later)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
